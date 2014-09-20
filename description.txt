@@ -1,0 +1,11 @@
+﻿Motivated by the <a href="http://neo4j.com/showmeyourgraph-rules/">Neo4j #ShowMeYourGraph Twitter Contest</a> for a graph visualization I finally girded up my lions to try working with the hive plot. <a href=\"http://www.hiveplot.net/\">Hive plot</a> is a special graph layout by <a href=\"http://mkweb.bcgsc.ca/\">Martin Krzywinski</a> which attempts to position the nodes in a meaningful way which can be interpreted. I really like the idea as I agree that for networks with many nodes and connections it can give much more insights into the data set compared to other 'hair ball' styled layouts e.g. force directed. 
+
+Moreover, I decided to talk a very good friend of mine who is a professional photographer and a graphic designer into participating together. I took charge of the teadius work of data cleaning and preparation while he made sure that the final result is really pleasant to look at. At the end some scripting was added to make the experience interactive et voila. 
+
+
+This graph visualizes the <a href="http://openflights.org/data.html">OpenFlights</a> data set which holds the information about world airports and the flight connection betwee them. In addition, the <a href="http://www.geonames.org/">GeoNames</a> data set was used to obtain population of the cities.
+
+
+Cities are represented by the circle which are organized into three main axes: Asian, European and North American. The closer the city is the the center of the graph the smaller the city. Size of circle represents the number of the airports that serve that particular city i.e. cities with big circles have many aiports. Linkes represent the flight connections between the city. For the visual pourposes only intercontinental connections are shown.
+
+Visualization was created using D3.js and the code is open and available on GitHub. Done with <3 by Dominik Cygalski and Lukasz Gajdek.

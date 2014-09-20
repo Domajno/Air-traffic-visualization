@@ -1,0 +1,211 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="styles.css">
+	<link rel="stylesheet" type="text/css" href="svg_styles.css">
+	<link href='http://fonts.googleapis.com/css?family=Lato:100,300,400|Ubuntu:300,400|Open+Sans:400,300|Oxygen:400,300' rel='stylesheet' type='text/css'>
+	<title>Air traffic visualization</title>
+</head>
+
+<body>
+	
+	<div id="menu">
+		<h1>Air traffic visualization</h1>
+		<div id="links">
+			<ul>				
+				<li id="legend-btn">Labels</li>
+				<li id="transform-btn">Zoom</li>
+				<li id="about">About</li>
+				<li id="invert-btn">Switch colors</li>
+			</ul>
+		</div>
+		<div id="legend"></div>
+	</div>
+	
+	<div id="graph"></div>
+	<div id="info">
+		<div>
+		<h3>What?</h3>
+		<p>This graph visualizes the <a href="http://openflights.org/data.html" target="_blank">OpenFlights</a> data set, which holds the information about airports around the globe and air traffic between them. In addition, the <a href="http://www.geonames.org/" target="_blank">GeoNames</a> data set was used to obtain the population value. Unfortunately, it was not always possible to map the cities from first data set to the cities from the second data set and therefore the graph visualizes only subset of the data.
+		</p>
+		<p>
+		Cities are represented by circles organized on three main axes: Asian, European and North American. Population number is expressed in a distance from the centre where far means more and close means less inhabitants. Size of a circle represents the number of airports that serve this particular location. Links serve as flight connections between cities. For the visual purposes, only intercontinental flights are shown.
+		</p>
+		<p>Zoom button performs non-linear but monotonic transformation of the space so that the dense regions of small population are more visible on the graph.
+		</p>
+	   
+	    <h3>Why?</h3>
+		<p><a href="http://neo4j.com/showmeyourgraph-rules/" target="_blank">Neo4j #ShowMeYourGraph Twitter Contest</a> was my main motivation and a great reason behind many hours spent on experimenting and testing my skills and patience while working with the hive plot.
+		</p>
+		<p><a href="http://www.hiveplot.net/" target="_blank">Hive plot</a> is a type of a graph layout by <a href="http://mkweb.bcgsc.ca/" target="_blank">Martin Krzywinski</a> which attempts to organise large networks and position nodes in a more insightful way as opposed to other 'hair ball' styled layouts e.g. force directed.
+		</p>
+	   
+		<h3>How?</h3>
+		<p>Visualization was created using D3.js (starting from this <a href="http://bl.ocks.org/mbostock/2066415" target="_blank">template</a>) and the code is open and available on <a href="https://github.com/Domajno/Air-traffic-visualization.git" target="_blank">GitHub</a>.
+		</p>
+		<p>I teamed up with a very good friend of mine who deals with digital media on a daily basis and while I took charge of the tedious work of data cleaning and preparation, he made sure that the final result is really pleasant to look at. In the final stage some scripting was added to make the experience interactive et voila.
+		</p>
+		
+		<p>Made with <3 by <a href="http://cygalski.pl/" target="_blank">Dominik Cygalski</a> and <a href="http://www.luke-photography.com/" target="_blank">Lukasz Gajdek.</a></p>
+		</div>
+	</div>
+
+	<script>
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	  ga('create', 'UA-35256103-1', 'auto');
+	  ga('send', 'pageview');
+
+	</script>
+	<script src="airports.js"></script>
+	<script src="connections.js"></script>
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script src="http://d3js.org/d3.hive.v0.min.js"></script>
+	
+<script>
+
+var width = 1280,
+    height = 780,
+    innerRadius = 10,
+    outerRadius = 350,
+	linear = true;
+	
+var exp = 1,
+	angle = d3.scale.ordinal().domain(d3.range(4)).rangePoints([0, 2 * Math.PI]),
+    radius = d3.scale.pow().exponent(exp).range([innerRadius, outerRadius]).nice(),
+    color = d3.scale.category20().domain(d3.range(20));
+
+window.onload = function() {
+
+// Add menu actions
+d3.select('#about').on('click', function () {
+	d3.select('#info').style('display','block');
+});
+d3.select('#info').on('click', function () {
+	if (d3.event && (d3.event.srcElement || d3.event.target) == document.getElementById('info'))
+		d3.select('#info').style('display',null);
+});
+d3.select("#invert-btn").on('click', function () {
+	var body = d3.select("body");
+	var clas = "inverted";
+	body.classed(clas, !body.classed(clas));
+});
+d3.select("#legend-btn").on('click', function () {
+	var body = d3.select("body"),
+		svg = d3.select("svg"),
+		clas = "legend";
+	body.classed(clas, !body.classed(clas));
+	svg.classed(clas, !svg.classed(clas));
+});
+d3.select("#transform-btn").on('click', function () {
+	var r,
+		delay = 10,
+		ease = 'in-out'
+		duration = function (d,i) {return Math.random()*800;},
+		hide_labels = false;;
+	if (exp == 1) {
+		exp = 0.5;
+	} else if (exp == 0.5){
+		exp = 0.3;
+		hide_labels = true;
+	} else if (exp == 0.3){
+		exp = 1;
+		hide_labels = false;
+	} 
+	r = d3.scale.pow().exponent(exp).range([innerRadius, outerRadius]).nice();
+	d3.selectAll(".node")
+    .data(nodes).transition().ease(ease).delay(delay).duration(duration)
+	.attr('cx', function(d){return r(d.y);})
+	
+	d3.selectAll(".link")
+    .data(links).transition().ease(ease).delay(delay).duration(duration)
+    .attr("d", d3.hive.link()
+    .angle(function(d) { return d?angle(d.x):0; })
+    .radius(function(d) { return d?r(d.y):0; }))
+	
+	d3.selectAll("text").transition().ease(ease).delay(delay).duration(duration).style('opacity', hide_labels ? 0 : 100);
+});
+
+
+
+// Draw graph
+var svg = d3.select("#graph").append("svg")
+	.attr("viewBox", "0, 0, " + width + ", " + height)
+  .append("g")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+// Add legend
+var legend = svg.append('g').attr("id", "legend-arrow").attr('transform', function(d) {return 'scale(0.75)rotate(' + (degrees(angle(2)) + 89) + ')translate(-51,-498)';});
+legend.append("path")
+    .attr("d", "M51.5,13.3l-1.5,472l-1.5-472c0-0.8,0.7-1.5,1.5-1.5C50.8,11.7,51.5,12.4,51.5,13.3L51.5,13.3z");
+legend.append("line").attr("stroke-miterlimit","10").attr("x1", "50").attr("y1","13.3").attr("x2", "26.4").attr("y2","55.9");
+legend.append('g').attr('transform', 'rotate(90)scale(1.5)translate(60,-20)')
+	.append('text').text("Population");		
+	
+svg.selectAll(".axis")
+    .data(d3.range(3))
+  .enter().append("line")
+    .attr("class", "axis")
+    .attr("transform", function(d) { return "rotate(" + degrees(angle(d)) + ")"; })
+    .attr("x1", radius.range()[0])
+    .attr("x2", radius.range()[1]*1.05);
+
+svg.selectAll(".link")
+    .data(links)
+  .enter().append("path")
+    .attr("class", "link")
+    .attr("d", d3.hive.link()
+    .angle(function(d) { return d?angle(d.x):0; })
+    .radius(function(d) { return d?radius(d.y):0; }))
+	.attr("data-s", function(d) {return d.source.id;})
+	.attr("data-t", function(d) {return d.target.id;});
+
+svg.selectAll(".node")
+    .data(nodes)
+  .enter().append("circle")
+	.attr("class", function(d) { return "node " + d.x; })
+	.attr("data-name", function(d) { return d.name; })
+    .attr("transform", function(d) { return "rotate(" + degrees(angle(d.x)) + ")"; })
+    .attr("cx", function(d) { return radius(d.y); })
+    .attr("r", function(d) { return Math.sqrt(d.count * 4); })
+	.attr("data-id", function(d, i) { return i; })
+	.on("mousedown", function(d, i) {
+		d3.selectAll("path").style('opacity', 0);
+		d3.selectAll("path[data-s='" + i + "']").style('opacity', 1);
+		d3.selectAll("path[data-t='" + i + "']").style('opacity', 1);
+	})
+	.on("mouseup", function(d, i) {
+		d3.selectAll("path").style('opacity', 1);
+	})
+	.on("mouseout", function(d, i) {
+		d3.selectAll("path").style('opacity', 1);
+	})
+	.append("svg:title")
+          .text(function(d) { return d.name; });
+
+// Add aicraft
+svg.append('g').attr('transform', 'scale(0.2)rotate(-70)translate(640,400)')
+	.append('path').attr('id', 'aircraft').attr('d', 'm54.82,16.917c0.023,-7.053 10.66,-7.053 10.66,0.202l0,29.621l41.453,24.925l0,10.947l-41.264,-13.58l0,22.12901l9.547,7.479l0,8.64101l-14.723,-4.57l-14.719,4.57l0,-8.64101l9.45,-7.479l0,-22.12901l-41.289,13.58l0,-10.947l40.885,-24.925l0,-29.823z');
+	
+// Add labels to the axes
+svg.append('g').attr('transform', function(d) {return 'rotate(' + (degrees(angle(2)) - 180) + ')translate(-300,-3)';})
+	.append('text').text("Europe");
+svg.append('g').attr('transform', function(d) {return 'rotate(' + (degrees(angle(1))) + ')translate(300,-3)';})
+	.append('text').text("Asia");
+svg.append('g').attr('transform', function(d) {return 'rotate(' + (-degrees(angle(0))) + ')translate(-300,-3)';})
+	.append('text').text("N. America");
+	
+function degrees(radians) {
+  return radians / Math.PI * 180 - 90;
+}
+
+}
+
+</script>
+</body>
+</html>

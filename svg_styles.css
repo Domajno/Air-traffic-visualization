@@ -1,0 +1,90 @@
+﻿svg {
+ overflow: hidden;
+ font-family: 'Ubuntu', 'Open Sans', 'Lato', sans-serif;
+ color: rgba(200,200,220,0.84); 
+}
+
+#legend-arrow {
+  display:none;
+}
+.legend #legend-arrow {
+  display:block;
+}
+#legend-arrow path{
+  fill: #969696;
+}
+#legend-arrow line{
+  fill: none;
+  stroke: #969696;
+  stroke-width: 3; 
+  stroke-miterlimit: 10;
+}
+
+
+text {
+  fill:rgba(150,150,150,0.54);
+  font-size:8pt;
+  font-weight: 100;
+}
+
+circle {
+  fill: rgba(10,10,10,0.75);
+  stroke: rgba(200,200,200,0.4);
+  stroke-width: 1.0px;
+}
+circle:hover{
+  stroke: rgba(255,255,255,0.9);
+}
+
+.link {
+  stroke: rgba(120,155,250,0.03);  
+  fill: none;
+  stroke-width: 1.5px;
+}
+
+.axis {
+  stroke: rgba(200,200,220,0.54);  
+  fill: none;
+  stroke-width: 1.5px;
+}
+
+#aircraft {
+  fill: rgba(200,200,200,0.44);
+}
+
+/*
+ * Inverted styles
+ */
+
+.inverted svg {
+  color: rgba(151, 151, 187, 1);
+}
+
+.inverted circle {
+  fill: rgba(232,232,240,0.8);
+  stroke: rgba(100,100,100,0.5);
+  stroke-width: 1.0px;
+}
+.inverted circle:hover {
+  stroke: rgba(00,00,00,0.9);
+}
+
+.inverted .link {
+  stroke: rgba(120,155,250,0.03);  
+  fill: none;
+  stroke-width: 1.5px;
+}
+
+.inverted .axis {
+  stroke: rgba(200,200,200,0.54);  
+  fill: none;
+  stroke-width: 1.5px;
+}
+
+.inverted text {
+  fill:rgba(151, 151, 187, 1);
+}
+
+.inverted  #aircraft {
+  fill: rgba(170,170,170,0.44);
+}
