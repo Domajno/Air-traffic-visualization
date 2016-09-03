@@ -1,4 +1,4 @@
-var nodes = [
+const nodes = [
 {x: 3, y: 0.206681292094, name: "Toronto", count: 8, id:0},
 {x: 2, y: 0.465202845344, name: "Moscow", count: 9, id:1},
 {x: 2, y: 0.338639457087, name: "London", count: 18, id:2},

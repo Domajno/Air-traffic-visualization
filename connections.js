@@ -1,4 +1,4 @@
-var links = [
+const links = [
 {source: nodes[206], target: nodes[132]},
 {source: nodes[132], target: nodes[206]},
 {source: nodes[209], target: nodes[1]},
